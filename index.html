@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#120F1C">
+<title>Curio: stories that make you curious</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&display=swap" rel="stylesheet">
+<style>
+  :root { --ink: #FFFFFF; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #120F1C; }
+  body { color: var(--ink); font-family: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+  button:focus-visible, a:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+
+  /* ---------- homepage ---------- */
+  .home { position: fixed; inset: 0; overflow-y: auto; background: #120F1C; }
+  .blob { position: absolute; width: 340px; height: 340px; border-radius: 50%; filter: blur(70px); opacity: .5; pointer-events: none; animation: floaty 18s ease-in-out infinite alternate; }
+  .b1 { background: #5B4BDB; top: -90px; left: -80px; }
+  .b2 { background: #0A8F8F; top: 420px; right: -120px; animation-delay: -9s; }
+  @keyframes floaty { from { transform: translate(0,0) scale(1); } to { transform: translate(40px, 60px) scale(1.15); } }
+  .hwrap { position: relative; max-width: 520px; margin: 0 auto; padding: calc(34px + env(safe-area-inset-top)) 22px calc(30px + env(safe-area-inset-bottom)); }
+  .brand { font-family: 'Fraunces', Georgia, serif; font-weight: 800; font-size: 2.3rem; letter-spacing: .01em; user-select: none; -webkit-user-select: none; }
+  .brand span { color: #FFD166; }
+  .tagline { margin: 4px 0 22px; font-size: 1.02rem; color: rgba(255,255,255,.82); }
+  .door { display: block; width: 100%; text-align: left; border: 0; color: #fff; font: inherit; border-radius: 26px; padding: 20px 20px 22px; position: relative; overflow: hidden; cursor: pointer; }
+  .door .demoji { font-size: 2rem; display: block; }
+  .door b { display: block; font-family: 'Fraunces', Georgia, serif; font-size: 1.6rem; margin: 8px 0 6px; }
+  .door .dsub { display: block; font-size: .98rem; line-height: 1.45; opacity: .93; }
+  .door1 { background: linear-gradient(150deg, #E8590C, #B1124F); box-shadow: 0 14px 34px rgba(177,18,79,.35); }
+  .door1:active { transform: scale(.985); }
+  .hlabel { margin: 26px 0 12px; font-size: .82rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: rgba(255,255,255,.7); }
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .tile { border: 0; border-radius: 22px; padding: 16px; text-align: left; color: #fff; font: inherit; cursor: pointer; min-height: 112px; display: flex; flex-direction: column; justify-content: space-between; }
+  .tile .temoji { font-size: 1.7rem; }
+  .tile b { display: block; font-size: 1.05rem; }
+  .tile small { opacity: .85; font-size: .82rem; }
+  .tile:active { transform: scale(.97); }
+  .door3 { margin-top: 16px; background: rgba(255,255,255,.07); border: 1.5px dashed rgba(255,255,255,.35); cursor: default; }
+  .soon { display: inline-block; margin-top: 12px; font-style: normal; font-weight: 700; font-size: .76rem; letter-spacing: .07em; text-transform: uppercase; background: #FFD166; color: #1B1530; border-radius: 999px; padding: 5px 11px; }
+
+  /* ---------- feed ---------- */
+  .feedview { position: fixed; inset: 0; }
+  .topbar {
+    position: fixed; z-index: 6; top: 0; left: 0; right: 0;
+    display: flex; align-items: center; gap: 10px;
+    padding: calc(10px + env(safe-area-inset-top)) 14px 26px;
+    background: linear-gradient(rgba(18,15,28,.8), rgba(18,15,28,0));
+  }
+  .back { flex: none; width: 40px; height: 40px; border-radius: 50%; border: 0; background: rgba(255,255,255,.16); color: #fff; font-size: 1.5rem; line-height: 1; cursor: pointer; }
+  .chipsrow { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+  .chipsrow::-webkit-scrollbar { display: none; }
+  .fchip { flex: none; font: inherit; font-weight: 700; font-size: .85rem; color: #fff; background: rgba(255,255,255,.1); border: 1.5px solid rgba(255,255,255,.38); border-radius: 999px; padding: 8px 14px; cursor: pointer; }
+  .fchip.on { background: #FFD166; color: #1B1530; border-color: #FFD166; }
+
+  .feed { height: 100vh; height: 100dvh; overflow-y: scroll; scroll-snap-type: y mandatory; overscroll-behavior-y: contain; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .feed::-webkit-scrollbar { display: none; }
+  .reel {
+    position: relative; height: 100vh; height: 100dvh;
+    scroll-snap-align: start; scroll-snap-stop: always; overflow: hidden;
+    display: flex; flex-direction: column; align-items: center;
+    padding: calc(92px + env(safe-area-inset-top)) 24px calc(112px + env(safe-area-inset-bottom));
+    background-size: 170% 170%; animation: drift 24s ease-in-out infinite alternate;
+  }
+  @keyframes drift { from { background-position: 0% 0%; } to { background-position: 100% 100%; } }
+  .reel .emoji { position: absolute; right: -22px; top: 10%; font-size: 11rem; line-height: 1; opacity: .16; transform: rotate(10deg); pointer-events: none; }
+  .cbody { position: relative; flex: 1; min-height: 0; width: 100%; max-width: 520px; display: flex; flex-direction: column; justify-content: center; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag { display: inline-flex; font-size: .8rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 7px 13px; border-radius: 999px; background: rgba(255,255,255,.2); }
+  .why { display: inline-flex; font-size: .8rem; font-weight: 700; padding: 7px 12px; border-radius: 999px; background: #FFD166; color: #1B1530; }
+  .hook { font-family: 'Fraunces', Georgia, serif; font-weight: 800; font-size: clamp(1.5rem, 4.2vh, 2.1rem); line-height: 1.14; margin: 18px 0 14px; text-wrap: balance; }
+  .story { margin: 0; font-size: clamp(.98rem, 2.3vh, 1.1rem); line-height: 1.58; color: rgba(255,255,255,.95); }
+  .deeper {
+    position: absolute; left: 24px; right: 24px; max-width: 520px; margin: 0 auto; bottom: calc(26px + env(safe-area-inset-bottom));
+    font: inherit; font-weight: 700; font-size: 1.05rem; cursor: pointer; padding: 17px 10px; border-radius: 999px; border: 0;
+    background: #FFD166; color: #1B1530; box-shadow: 0 8px 24px rgba(0,0,0,.28);
+  }
+  .deeper:active { transform: scale(.97); }
+  .swipehint { position: absolute; left: 0; right: 0; text-align: center; pointer-events: none; bottom: calc(92px + env(safe-area-inset-bottom)); font-size: .85rem; font-weight: 700; color: rgba(255,255,255,.92); animation: bob 1.6s ease-in-out infinite; }
+  @keyframes bob { 0%,100% { transform: translateY(0); opacity: .95; } 50% { transform: translateY(-7px); opacity: .6; } }
+  .pill { font: inherit; font-weight: 700; font-size: 1.02rem; cursor: pointer; padding: 17px 10px; border-radius: 999px; border: 0; background: #FFD166; color: #1B1530; }
+  .pill.ghost { background: transparent; color: #fff; border: 2px solid rgba(255,255,255,.75); }
+  /* Deep reader */
+  .reader {
+    position: fixed; inset: 0; z-index: 10;
+    background: #FBFAF7; color: #1E1B24;
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+    transform: translateY(100%); visibility: hidden;
+    transition: transform .35s cubic-bezier(.2,.8,.2,1), visibility 0s .35s;
+  }
+  .reader.open { transform: translateY(0); visibility: visible; transition: transform .35s cubic-bezier(.2,.8,.2,1); }
+  .progress { position: fixed; top: 0; left: 0; height: 5px; width: 0; z-index: 12; background: #FFD166; }
+  .rhead { position: relative; padding: 38px 24px 30px; color: #fff; overflow: hidden; }
+  .rhead .emoji { position: absolute; right: -10px; bottom: -22px; font-size: 9rem; opacity: .22; transform: rotate(-8deg); }
+  .rwrap { max-width: 640px; margin: 0 auto; position: relative; }
+  .rhead .tag { margin-bottom: 14px; }
+  .rhead h2 { font-family: 'Fraunces', Georgia, serif; font-weight: 800; font-size: clamp(1.6rem, 6.5vw, 2.3rem); line-height: 1.14; margin: 0 0 12px; text-wrap: balance; }
+  .rhead .meta { font-size: .95rem; font-weight: 500; opacity: .92; }
+  .rbody { max-width: 640px; margin: 0 auto; padding: 26px 24px 110px; }
+  .rbody h3 { font-family: 'Fraunces', Georgia, serif; font-weight: 800; font-size: 1.35rem; line-height: 1.2; margin: 30px 0 10px; }
+  .rbody p { font-size: 1.08rem; line-height: 1.75; margin: 0 0 16px; }
+  .takeaway { margin-top: 30px; padding: 20px; border-radius: 18px; color: #fff; }
+  .takeaway b { display: block; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 8px; opacity: .9; }
+  .takeaway span { font-family: 'Fraunces', Georgia, serif; font-weight: 700; font-size: 1.25rem; line-height: 1.35; }
+  .source { margin-top: 22px; font-size: .98rem; }
+  .source a { font-weight: 700; color: #1B4FA8; }
+  .rbar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 11;
+    padding: 12px 18px calc(12px + env(safe-area-inset-bottom));
+    background: linear-gradient(to top, #FBFAF7 70%, rgba(251,250,247,0));
+    display: none;
+  }
+  .rbar.open { display: block; }
+  .rbar .pill { display: block; width: 100%; max-width: 640px; margin: 0 auto; background: #1E1B24; color: #fff; box-shadow: none; }
+
+  .sheetbg { position: fixed; inset: 0; z-index: 20; background: rgba(0,0,0,.55); opacity: 0; pointer-events: none; transition: opacity .25s ease; }
+  .sheetbg.open { opacity: 1; pointer-events: auto; }
+  .psheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 21; max-width: 520px; margin: 0 auto;
+            max-height: 86vh; max-height: 86dvh; overflow-y: auto;
+            background: #1D1830; color: #fff; border-radius: 28px 28px 0 0;
+            padding: 24px 22px calc(22px + env(safe-area-inset-bottom));
+            transform: translateY(105%); visibility: hidden; transition: transform .32s ease, visibility 0s .32s; }
+  .psheet.open { transform: translateY(0); visibility: visible; transition: transform .32s ease; }
+  .psheet h2 { font-family: 'Fraunces', Georgia, serif; font-weight: 800; font-size: 1.6rem; margin: 0 0 6px; }
+  .psheet .sub { margin: 0 0 18px; font-size: .98rem; line-height: 1.5; color: rgba(255,255,255,.78); }
+  .trow { display: grid; grid-template-columns: 138px 1fr; gap: 12px; align-items: center; margin: 0 0 12px; font-size: .95rem; font-weight: 500; }
+  .tlabel { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ttrack { height: 14px; border-radius: 999px; background: rgba(255,255,255,.1); overflow: hidden; }
+  .tfill { height: 100%; border-radius: 999px; }
+  .pstats { display: flex; gap: 10px; margin: 6px 0 20px; }
+  .pstat { flex: 1; background: rgba(255,255,255,.08); border-radius: 16px; padding: 12px 12px 10px; }
+  .pstat b { display: block; font-family: 'Fraunces', Georgia, serif; font-size: 1.5rem; }
+  .pstat span { font-size: .8rem; color: rgba(255,255,255,.72); }
+  .pbtns { display: flex; gap: 10px; margin-top: 8px; }
+  .pbtns .pill { flex: 1; }
+
+
+
+
+  .door3 { cursor: pointer; }
+  .door3:active { transform: scale(.985); }
+
+  /* ---------- bedtime story ---------- */
+  .bedtime { position: fixed; inset: 0; background: linear-gradient(180deg, #0B1030 0%, #1A1550 100%); color: #E9E4F5; }
+  .stars { position: absolute; inset: 0; pointer-events: none; animation: twinkle 7s ease-in-out infinite alternate;
+    background-image:
+      radial-gradient(1.6px 1.6px at 12% 14%, #fff, transparent), radial-gradient(1.2px 1.2px at 78% 9%, #fff, transparent),
+      radial-gradient(1.8px 1.8px at 34% 27%, #fff, transparent), radial-gradient(1.2px 1.2px at 90% 33%, #fff, transparent),
+      radial-gradient(1.4px 1.4px at 22% 62%, #fff, transparent), radial-gradient(1.2px 1.2px at 68% 71%, #fff, transparent),
+      radial-gradient(1.6px 1.6px at 48% 88%, #fff, transparent), radial-gradient(1.2px 1.2px at 8% 91%, #fff, transparent),
+      radial-gradient(1.4px 1.4px at 58% 18%, #fff, transparent), radial-gradient(1.2px 1.2px at 84% 56%, #fff, transparent); }
+  @keyframes twinkle { from { opacity: .35; } to { opacity: .85; } }
+  .btop { position: absolute; z-index: 3; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: calc(10px + env(safe-area-inset-top)) 14px 0; }
+  .bdots { display: flex; gap: 8px; padding-right: 8px; }
+  .bdot { width: 8px; height: 8px; border-radius: 50%; background: rgba(233,228,245,.25); transition: background .3s ease; }
+  .bdot.on { background: rgba(233,228,245,.85); }
+  .pager { position: absolute; inset: 0; display: flex; overflow-x: scroll; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
+  .pager::-webkit-scrollbar { display: none; }
+  .bpage { flex: 0 0 100%; scroll-snap-align: start; scroll-snap-stop: always; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: calc(104px + env(safe-area-inset-top)) 30px calc(116px + env(safe-area-inset-bottom)); }
+  .bin { width: 100%; max-width: 520px; }
+  .bkind { font-size: .78rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: rgba(233,228,245,.6); }
+  .btitle { font-family: 'Fraunces', Georgia, serif; font-weight: 800; font-size: 1.75rem; line-height: 1.15; margin: 8px 0 18px; color: #F4F0FF; }
+  .bpage p { margin: 0; font-family: 'Fraunces', Georgia, serif; font-weight: 600; font-size: clamp(1.08rem, 2.55vh, 1.32rem); line-height: 1.62; color: #E9E4F5; }
+  .bpn { margin-top: 22px; font-size: .8rem; letter-spacing: .08em; color: rgba(233,228,245,.5); }
+  .bend { font-family: 'Fraunces', Georgia, serif; font-weight: 800; font-size: 1.5rem; margin-top: 22px; color: #F4F0FF; }
+  .bbar { position: absolute; z-index: 3; left: 24px; right: 24px; max-width: 520px; margin: 0 auto; bottom: calc(26px + env(safe-area-inset-bottom)); }
+  .bnext { width: 100%; font: inherit; font-weight: 700; font-size: 1.02rem; cursor: pointer; padding: 16px 10px; border-radius: 999px; border: 1.5px solid rgba(233,228,245,.5); background: rgba(233,228,245,.1); color: #F4F0FF; }
+  .bnext:active { transform: scale(.98); }
+  .dimmer { position: absolute; inset: 0; z-index: 2; background: #000; opacity: 0; pointer-events: none; transition: opacity 6s ease; }
+  .dimmer.on { opacity: .5; }
+  @media (prefers-reduced-motion: reduce) { .stars { animation: none; opacity: .6; } .dimmer { transition: none; } }
+
+  @media (prefers-reduced-motion: reduce) { .blob, .reel, .swipehint { animation: none; } .reader, .reader.open, .psheet, .psheet.open, .sheetbg { transition: none; } }
+
+  /* ---------- bottom tab bar ---------- */
+  .tabbar { position: fixed; z-index: 8; left: 0; right: 0; bottom: 0; display: flex;
+    padding-bottom: env(safe-area-inset-bottom);
+    background: rgba(18,15,28,.93); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+    border-top: 1px solid rgba(255,255,255,.12); }
+  .tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 6px 9px;
+    background: none; border: 0; font: inherit; font-size: .74rem; font-weight: 700; color: rgba(255,255,255,.6); cursor: pointer; }
+  .tab.on { color: #FFD166; }
+  .tab:active { opacity: .6; }
+  .home .hwrap { padding-bottom: calc(104px + env(safe-area-inset-bottom)); }
+  .reel { padding-bottom: calc(176px + env(safe-area-inset-bottom)); }
+  .deeper { bottom: calc(86px + env(safe-area-inset-bottom)); }
+  .swipehint { bottom: calc(152px + env(safe-area-inset-bottom)); }
+  .topbar .back { display: none; }
+  .topbar { padding-left: 16px; }
+
+  /* tighter home so all three blocks fit above the tab bar on a normal phone */
+  .hwrap { padding-top: calc(22px + env(safe-area-inset-top)); }
+  .tagline { margin: 2px 0 16px; }
+  .door { padding: 16px 18px 18px; }
+  .door b { margin: 4px 0 4px; font-size: 1.5rem; }
+  .door .demoji { font-size: 1.7rem; }
+  .hlabel { margin: 20px 0 10px; }
+  .tile { min-height: 96px; padding: 14px; }
+  .door3 { margin-top: 12px; }
+  .soon { margin-top: 8px; }
+
+  /* ---------- AI labels ---------- */
+  .credit { margin: 12px 0 0; font-size: .78rem; font-weight: 500; color: rgba(255,255,255,.78); }
+  .rcredit { margin: 22px 0 0; font-size: .9rem; line-height: 1.5; color: #5b5f66; }
+  .bcredit { margin-top: 16px; font-size: .8rem; line-height: 1.5; color: rgba(233,228,245,.62); }
+  .bcredit a { color: rgba(233,228,245,.85); }
+  .bmoral { margin-top: 18px; font-family: 'Fraunces', Georgia, serif; font-weight: 600; font-style: italic; font-size: 1.05rem; line-height: 1.5; color: #F4F0FF; }
+
+  /* ---------- stories list ---------- */
+  .storylist { position: fixed; inset: 0; overflow-y: auto; background: linear-gradient(180deg, #0B1030 0%, #1A1550 100%); color: #E9E4F5; }
+  .slwrap { max-width: 520px; margin: 0 auto; padding: calc(30px + env(safe-area-inset-top)) 22px calc(110px + env(safe-area-inset-bottom)); }
+  .sltitle { font-family: 'Fraunces', Georgia, serif; font-weight: 800; font-size: 2.3rem; margin: 0; color: #F4F0FF; }
+  .slsub { margin: 8px 0 22px; font-size: 1rem; line-height: 1.5; color: rgba(233,228,245,.72); }
+  .srow { display: block; width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer; margin: 0 0 12px; padding: 16px 18px; border-radius: 20px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.13); }
+  .srow:active { opacity: .65; }
+  .stitle { display: block; font-family: 'Fraunces', Georgia, serif; font-weight: 700; font-size: 1.35rem; line-height: 1.2; color: #F4F0FF; }
+  .smeta { display: block; margin-top: 6px; font-size: .9rem; color: rgba(233,228,245,.72); }
+  .scredit { display: inline-block; margin-top: 10px; font-size: .74rem; font-weight: 700; letter-spacing: .04em; padding: 5px 10px; border-radius: 999px; background: rgba(255,209,102,.16); color: #FFD166; }
+</style>
+</head>
+<body>
+<section class="home" id="home" hidden>
+  <div class="blob b1"></div><div class="blob b2"></div>
+  <div class="hwrap">
+    <div class="brand" id="brand">Cur<span>i</span>o</div>
+    <p class="tagline">Stories that make you curious.</p>
+    <button class="door door1" id="doorQuick">
+      <span class="demoji" aria-hidden="true">&#9889;</span>
+      <b>Random scroll</b>
+      <span class="dsub">Quick facts on tech, fashion, science and food. Swipe up for the next one.</span>
+    </button>
+    <h2 class="hlabel">Pick a topic</h2>
+    <div class="tiles" id="tiles"></div>
+    <button class="door door3" id="doorTonight">
+      <span class="demoji" aria-hidden="true">&#127769;</span>
+      <b>Stories</b>
+      <span class="dsub">Calm folk tales and fables to read before sleep.</span>
+      <em class="soon">Sample</em>
+    </button>
+  </div>
+</section>
+
+<section class="feedview" id="feedview" hidden>
+  <div class="topbar">
+    <button class="back" id="backBtn" aria-label="Back to home">&#8249;</button>
+    <div class="chipsrow" id="chipsrow"></div>
+  </div>
+  <main class="feed" id="feed"></main>
+</section>
+
+<section class="bedtime" id="bedtime" hidden>
+  <div class="stars" aria-hidden="true"></div>
+  <div class="btop">
+    <button class="back" id="bedBack" aria-label="Back to home">&#8249;</button>
+    <div class="bdots" id="bdots" aria-hidden="true"></div>
+  </div>
+  <div class="pager" id="pager"></div>
+  <div class="bbar"><button class="bnext" id="bnext">Next page</button></div>
+  <div class="dimmer" id="dimmer"></div>
+</section>
+
+<section class="storylist" id="storylist" hidden>
+  <div class="slwrap">
+    <h1 class="sltitle">Stories</h1>
+    <p class="slsub">Calm tales to read before sleep. Retold by AI from public-domain books, with the source on every one.</p>
+    <div id="slist"></div>
+  </div>
+</section>
+
+<nav class="tabbar" id="tabbar" aria-label="Main" hidden>
+  <button class="tab on" id="tabHome"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg><span>Home</span></button>
+  <button class="tab" id="tabScroll"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg><span>Random scroll</span></button>
+</nav>
+
+<div class="progress" id="progress"></div>
+<section class="reader" id="reader" aria-hidden="true">
+  <div class="rhead" id="rhead">
+    <div class="emoji" id="remoji" aria-hidden="true"></div>
+    <div class="rwrap">
+      <span class="tag" id="rtag"></span>
+      <h2 id="rtitle"></h2>
+      <div class="meta" id="rmeta"></div>
+    </div>
+  </div>
+  <div class="rbody" id="rbody"></div>
+</section>
+<div class="rbar" id="rbar"><button class="pill" id="closeBtn">Back to the feed</button></div>
+
+<div class="sheetbg" id="sheetbg"></div>
+<section class="psheet" id="psheet" aria-hidden="true" aria-labelledby="ptitle">
+  <h2 id="ptitle">Your taste</h2>
+  <p class="sub" id="psub"></p>
+  <div class="pstats" id="pstats"></div>
+  <div id="pbars"></div>
+  <div class="pbtns">
+    <button class="pill ghost" id="presetBtn">Reset taste</button>
+    <button class="pill" id="pcloseBtn">Close</button>
+  </div>
+</section>
+
+<script>
+  var FALLBACK = [
+    {
+      key: "earth", domain: "Earth science", emoji: "\uD83C\uDF0B", c1: "#0A8F8F", c2: "#064B5C",
+      hook: "One night in 1986, a lake killed about 1,700 people. No fire, no flood, no earthquake.",
+      story: "On August 21, 1986, people living near Lake Nyos in Cameroon went to sleep as usual. By morning, most of the nearby villages were silent, and thousands of cattle were dead. The lake had been quietly storing carbon dioxide at its bottom, seeping in from volcanic rock below. Something disturbed it, and the gas burst out as an invisible cloud, heavier than air, that rolled down the valleys and pushed away the air people needed to breathe. Today, pipes run from the lake floor to the surface and let the gas escape slowly and safely.",
+      deep: [
+        { h: "The morning after", p: [
+          "On the evening of August 21, 1986, people in the villages around Lake Nyos, a crater lake in northwest Cameroon, went to sleep. Sometime that night, a huge invisible cloud of gas rolled down from the lake and flowed through the valleys below. Those who survived woke up many hours later, confused and weak, to find family members, neighbors and animals dead where they lay. Roughly 1,700 people died, along with thousands of cattle. Reports suggest some victims were found as far as about 25 kilometers away.",
+          "The first outsiders to arrive found a puzzle. There were no burned buildings, no collapsed roofs, no flood damage. The only visible change was the lake itself, which had turned from a calm blue to a murky red-brown. Investigators had to work out what could kill so many people so quietly."
+        ]},
+        { h: "A lake that holds its breath", p: [
+          "Lake Nyos sits in the crater of a volcano that is dormant but not dead. Below the lake bed, magma gives off carbon dioxide, which seeps up into the water. Carbon dioxide dissolves in water, especially under pressure, the same way it does in a sealed soda bottle. In many lakes, seasonal changes stir the water so gases escape gradually. But Nyos is deep, more than 200 meters, and in tropical conditions its layers rarely mix. Year after year, gas accumulated in the bottom water, held there by the weight of the lake above.",
+          "It was a bomb with a very slow fuse. As long as the deep water stayed deep, nothing happened."
+        ]},
+        { h: "The trigger", p: [
+          "Nobody saw what tipped it, and scientists still debate the cause. A landslide into the lake is one suggestion, and others have pointed to cool rain or wind disturbing the surface. Whatever happened, once a mass of gas-rich water rose even a little, the pressure on it dropped and gas started coming out of solution. The bubbles lifted more water, which released more gas. It was a chain reaction, like a shaken soda bottle opened all at once, and a vast quantity of carbon dioxide erupted within minutes."
+        ]},
+        { h: "Why it was so deadly", p: [
+          "Carbon dioxide is about one and a half times as dense as air, so the cloud did not rise and disperse. It flowed downhill like water, following the valleys and hugging the ground, displacing the oxygen in its path. People and animals inside it lost consciousness quickly and then stopped breathing. Those on higher ground, outside the cloud's path, survived. There was no smell or visible warning, because carbon dioxide itself is colorless and odorless."
+        ]},
+        { h: "The warning nobody understood", p: [
+          "Two years earlier, in 1984, a similar but smaller event at nearby Lake Monoun killed 37 people. At the time, the cause was not clearly understood. After Nyos, scientists realized both disasters were part of a rare phenomenon, now called a limnic eruption. Only a few lakes are known to be capable of it. Lake Kivu, on the border of Rwanda and the Democratic Republic of the Congo, also holds large amounts of dissolved gas and is watched closely."
+        ]},
+        { h: "Fixing a lake", p: [
+          "The solution is surprisingly low-tech. A long pipe is anchored to the lake floor, with its open top just above the surface. Gas-rich water enters at the bottom and rises through the pipe. As the pressure falls, the gas bubbles out, which lifts more water, so once started the process keeps itself going like a natural fountain. A pilot pipe began operating at Nyos in 2001, and more were added later, steadily draining the stored gas. People now live and farm in the area under much lower risk."
+        ]}
+      ],
+      takeaway: "Some of the most dangerous things are invisible and slow. Nyos was made safe not by fighting the gas, but by letting it out gently.",
+      source: { label: "Wikipedia: Lake Nyos", url: "https://en.wikipedia.org/wiki/Lake_Nyos" }
+    },
+    {
+      key: "cooking", domain: "Cooking", emoji: "\uD83C\uDF73", c1: "#C8431E", c2: "#7A1F12",
+      hook: "Toast tastes better than bread because a chemist got distracted in 1912.",
+      story: "Louis-Camille Maillard was trying to understand how the body builds proteins. He heated amino acids together with sugars in his lab, and the mixture turned brown. He had found, almost by accident, the reaction behind the flavor of seared steak, bread crust, roasted coffee and fried onions. With enough heat, sugars and amino acids rearrange into hundreds of new flavor molecules. That's why dry, hot cooking tastes richer than boiling, which stays near 100 degrees Celsius, too cool for the reaction to really take off.",
+      deep: [
+        { h: "The accident in a lab", p: [
+          "Louis-Camille Maillard was a French physician and chemist. In 1912, he was studying how amino acids link together into proteins inside the body. To imitate that in the lab, he heated amino acids with sugars, and the mixture turned a yellow-brown color. Many people would have thrown it out. Maillard recognized it as a new kind of reaction, wrote it up, and even speculated that it might also happen in living tissue.",
+          "For a long time it stayed an academic curiosity. It took food scientists decades later to realize he had described what happens in every hot kitchen."
+        ]},
+        { h: "What's happening at the molecular level", p: [
+          "A sugar molecule with an active carbonyl group meets the amino group of an amino acid, and the two join. That first product is unstable and rearranges itself, and from there the reaction branches into a huge web of further steps. The result is hundreds of different compounds.",
+          "Some are aromatic molecules, with names like furans and pyrazines, that smell roasty, nutty or toasty. Others are large brown polymers called melanoidins, which give crust and coffee their color. Which flavors you get depends on which sugars and amino acids were present. That's why bread, steak and coffee all brown, yet each tastes like itself."
+        ]},
+        { h: "Heat, water and acidity", p: [
+          "The reaction does occur at lower temperatures, but very slowly. It speeds up dramatically above roughly 140 degrees Celsius. This is why boiling never produces a browned flavor: water holds food at about 100 degrees. It's also why searing, roasting and baking work, and why a wet surface browns poorly until the moisture has evaporated.",
+          "Acidity matters too. Alkaline conditions speed the reaction up. That's the reason traditional pretzels are dipped in an alkaline solution before baking, which gives them their deep brown color and distinctive flavor. A tiny pinch of baking soda has a similar effect on onions in a pan."
+        ]},
+        { h: "Not the same as caramelization", p: [
+          "Caramelization is sugar breaking down from heat alone, and it needs higher temperatures. Maillard requires both sugars and amino acids, so it only happens in foods that contain some protein. In a hot oven the two often occur together, which is why people confuse them."
+        ]},
+        { h: "The other side of the coin", p: [
+          "The same chemistry can produce less welcome compounds. When starchy foods such as potatoes are fried or baked at high temperatures, an amino acid called asparagine can react with sugars to form acrylamide, which the International Agency for Research on Cancer classifies as probably carcinogenic to humans. Food regulators monitor it, and manufacturers adjust temperatures and recipes to reduce it.",
+          "Maillard-type reactions also happen slowly inside the body, and researchers study them in connection with aging and the complications of diabetes."
+        ]},
+        { h: "Using it in your own kitchen", p: [
+          "Pat meat and vegetables dry before cooking. Use a properly hot pan. Leave space between pieces so steam can escape instead of trapping moisture. And be patient: the best browning happens in the last, driest stage of cooking."
+        ]}
+      ],
+      takeaway: "Flavor is chemistry you can steer: remove water, add heat, and give the reaction time.",
+      source: { label: "Wikipedia: Maillard reaction", url: "https://en.wikipedia.org/wiki/Maillard_reaction" }
+    },
+    {
+      key: "tech", domain: "Technology", emoji: "\u2615", c1: "#5B4BDB", c2: "#2A1F8A",
+      hook: "The first webcam was built because people were tired of walking to an empty coffee pot.",
+      story: "In 1991, computer scientists at the University of Cambridge kept climbing the stairs to the Trojan Room, only to find the coffee pot empty. So they pointed a camera at the pot and wrote software that sent a picture of it to everyone's computer, a few times a minute. In 1993, they put the live image on the web, and strangers around the world started watching a coffee pot. It is often called the first webcam. It ran for about a decade, and in 2001 the coffee machine itself was sold at an online auction.",
+      deep: [
+        { h: "A coffee problem in a computer lab", p: [
+          "In the early 1990s, the University of Cambridge Computer Laboratory had a coffee pot shared by researchers working on different floors. It sat in a corridor outside the Trojan Room, a small room in the lab. People often made the walk only to find the pot empty or the coffee gone cold. Researchers Quentin Stafford-Fraser and Paul Jardetzky decided to fix that with what they had: computers."
+        ]},
+        { h: "How it worked", p: [
+          "In 1991, they pointed a camera at the pot and connected it to a computer that could capture still images. Jardetzky wrote the server software that grabbed the pictures, and Stafford-Fraser wrote the client software, which let anyone on the building's network see a small picture of the pot in a window on their desktop.",
+          "The pictures were tiny and in shades of grey, and they updated a few times a minute. It was enough to see how much coffee was left."
+        ]},
+        { h: "From a corridor to the world", p: [
+          "In 1993, the World Wide Web was spreading and graphical browsers had just appeared. Colleagues, including Daniel Gordon and Martyn Johnson, connected the camera's images to a web page. Suddenly anyone on the internet could look at the pot. People did, in large numbers.",
+          "There was nothing to see except a pot and a coffee level, but the thrill was in the idea: a live window into a room on the other side of the world."
+        ]},
+        { h: "The end of the pot", p: [
+          "The camera was switched off in August 2001, when the lab moved to a new building. The coffee machine in use at the end was auctioned online and bought by a German news website for a few thousand pounds. It reportedly wasn't the original pot, as several had come and gone over the years."
+        ]},
+        { h: "Why it matters", p: [
+          "The coffee pot was not important as a technology. Cameras, networks and web pages already existed. What it showed was a new kind of idea: connect a real-world object to the internet so people far away can see its state.",
+          "That is a seed of live streaming, security cameras, and the idea that everyday things can report their status online. It is also a reminder that real inventions often begin with someone tired of a small inconvenience."
+        ]}
+      ],
+      takeaway: "Big things often start as small annoyances solved by someone who refused to keep walking up the stairs.",
+      source: { label: "Wikipedia: Trojan Room coffee pot", url: "https://en.wikipedia.org/wiki/Trojan_Room_coffee_pot" }
+    },
+    {
+      key: "fashion", domain: "Fashion", emoji: "\uD83D\uDC56", c1: "#1F6FD1", c2: "#123C7A",
+      hook: "Blue jeans exist because a tailor's customers kept tearing their pockets.",
+      story: "In the 1870s, a tailor named Jacob Davis in Nevada kept hearing the same complaint: work pants tore at the pockets. He started hammering small metal rivets into the stress points, and it worked. But he couldn't afford the patent fees, so he wrote to his fabric supplier, Levi Strauss, and offered to share the idea. In 1873, they received a US patent for riveted work pants. It had nothing to do with style. It was about making clothes last for miners and laborers. Fashion only claimed jeans many decades later.",
+      deep: [
+        { h: "The customer who wanted unbreakable pants", p: [
+          "Jacob Davis was a tailor in Reno, Nevada, in the early 1870s. The story goes that a customer asked him for tough work pants that wouldn't rip at the seams, and Davis had an idea: reinforce the weak points with copper rivets, the kind used on horse blankets. The pockets stopped tearing, and word spread among laborers who needed clothes that could survive heavy work."
+        ]},
+        { h: "A partnership by letter", p: [
+          "Davis knew he had a good idea but couldn't afford the cost of a patent. So in 1872 he wrote to his fabric supplier, Levi Strauss, a San Francisco wholesaler, and proposed that Strauss pay the fees in exchange for a share. Strauss agreed. The US patent for improving work pants with rivets was granted to both men on May 20, 1873, and Davis moved to San Francisco to supervise production.",
+          "In 1890, the company began using the lot number 501 for its classic waist overalls, a name still in use today."
+        ]},
+        { h: "Why denim, and why blue", p: [
+          "The fabric is a cotton twill called denim, a name commonly traced to the French town of Nimes, while the word jeans is linked to Genoa in Italy. In denim, the vertical warp threads are dyed with indigo and the horizontal weft threads are left white. That's why the inside of jeans looks lighter.",
+          "Indigo also sits mostly on the surface of the thread rather than soaking into the core, which is why jeans fade and wear in individual patterns, and why people value a pair that has aged with them."
+        ]},
+        { h: "After the patent", p: [
+          "The patent expired in 1890, and competitors such as Lee and Wrangler entered the market, but jeans were still workwear for miners, farmers, cowboys and railway workers. The shift to fashion came in the 20th century. In the 1950s, film stars and young people wearing jeans linked them to rebellion, and some schools banned them. By the 1960s and 70s, they were everywhere, and designers started selling them as luxury items."
+        ]},
+        { h: "What jeans show about design", p: [
+          "Many famous pieces of clothing began as solutions to practical problems: the trench coat for soldiers, the sneaker for sport. Jeans started as a rivet. Strength, comfort and affordability gave them their staying power, and meaning was added later by the people who wore them."
+        ]}
+      ],
+      takeaway: "Style often arrives after function. The pants that outlived their century started as a repair.",
+      source: { label: "Wikipedia: Jeans", url: "https://en.wikipedia.org/wiki/Jeans" }
+    },
+    {
+      key: "space", domain: "Space", emoji: "\uD83D\uDCE1", c1: "#8E3FD1", c2: "#3B1578",
+      hook: "A radio telescope heard something for 72 seconds in 1977. Nobody has heard it since.",
+      story: "On August 15, 1977, the Big Ear radio telescope at Ohio State University swept past a patch of sky near the constellation Sagittarius. Days later, astronomer Jerry Ehman was reading the printout and spotted a string of characters far stronger than the usual background noise. He circled it and wrote \"Wow!\" next to it. The signal lasted about 72 seconds, close to the full time the telescope could watch that spot, and it was near the frequency hydrogen emits. Searches since then have found nothing like it.",
+      deep: [
+        { h: "How a telescope listens", p: [
+          "The Big Ear was a large radio telescope at Ohio State University, near Delaware, Ohio. It was essentially fixed in place, and the sky drifted past it as the Earth rotated, so any single point in the sky stayed in its view for about 72 seconds. It was part of one of the longest-running searches for extraterrestrial radio signals. Its computer printed the strength of signals as rows of numbers and letters, with higher symbols meaning stronger signals."
+        ]},
+        { h: "The night of August 15, 1977", p: [
+          "A few days later, astronomer Jerry Ehman was going through the printouts when he noticed a sequence of characters, 6EQUJ5, that climbed from low values to a peak and back down. That rise and fall over the 72 seconds is just what you'd expect from a source fixed in the sky while the telescope's view sweeps across it. Ehman circled it in red and wrote \"Wow!\" in the margin. The phrase became its name."
+        ]},
+        { h: "Why scientists took it seriously", p: [
+          "The signal was narrow in frequency, close to 1420 MHz, the natural frequency of hydrogen, the most common element in the universe. That frequency band is protected internationally, meaning transmitters on Earth are not supposed to use it, and some scientists have long argued it would be an obvious channel for an alien civilization to choose. The signal was also far stronger than the background noise. Everything about it looked like a candidate for something real."
+        ]},
+        { h: "What bothers astronomers", p: [
+          "The telescope had two receiving horns, and a steady source should have been seen by both, a few minutes apart. The signal appeared in only one. And in the decades since, searches by Ehman and many others, including one with the Very Large Array in the 1990s, have never found it again. A single event that never repeats can't be tested, which is the heart of the frustration."
+        ]},
+        { h: "Explanations", p: [
+          "Ideas include interference from Earth, such as reflections from satellites or space debris, and an unusual natural source. Around 2016 to 2017, one researcher proposed that a passing comet's cloud of hydrogen could explain it, which other astronomers disputed. There is also the possibility that it was a short-lived artificial signal. None of the explanations has been proven, and the case remains open."
+        ]},
+        { h: "The telescope that's gone", p: [
+          "Big Ear itself was demolished in 1998 to make way for a golf course expansion. What remains is the printout and the lesson: in science, one exciting observation isn't a discovery until someone else can see it too."
+        ]}
+      ],
+      takeaway: "One thrilling signal that never repeats isn't a discovery yet. Science needs a second look.",
+      source: { label: "Wikipedia: Wow! signal", url: "https://en.wikipedia.org/wiki/Wow!_signal" }
+    },
+    {
+      key: "chem", domain: "Chemistry", emoji: "\u2697\uFE0F", c1: "#178A41", c2: "#0C5A2B",
+      hook: "About half the people alive today are fed because two chemists pulled fertilizer out of thin air.",
+      story: "Air is roughly 78 percent nitrogen, yet plants can't use it, because the atoms are locked together in very strong pairs. For centuries, farmers relied on manure and mined deposits. Around 1909, Fritz Haber showed that nitrogen and hydrogen could be forced to combine into ammonia under high pressure and temperature, and Carl Bosch scaled it up for industry. Fertilizer made this way is often estimated to feed about half of humanity. The catch is that the process uses a lot of energy, a trade-off we are still working through.",
+      deep: [
+        { h: "A warning from 1898", p: [
+          "In 1898, the British chemist Sir William Crookes gave a speech warning that the world was heading toward a food crisis. Wheat farming depended on nitrogen in the soil, and natural sources such as guano and Chilean saltpeter were running down. Without a way to make nitrogen fertilizer, he argued, populations would outgrow the food supply. He challenged chemists to find a solution."
+        ]},
+        { h: "The paradox of nitrogen", p: [
+          "Nitrogen makes up about 78 percent of the air we breathe, yet plants can't use it. In the atmosphere, nitrogen atoms are bound in pairs by a triple bond, one of the strongest in chemistry. Plants need nitrogen in fixed forms such as ammonia or nitrates. Nature manages this with lightning and with certain soil bacteria. Humans had no way to do it at scale."
+        ]},
+        { h: "Haber's breakthrough", p: [
+          "In 1909, at Karlsruhe in Germany, Fritz Haber and his assistant Robert Le Rossignol demonstrated a small table-top machine that made ammonia from nitrogen and hydrogen, using high pressure and a catalyst based on the rare metal osmium. The yield was small, but the principle worked. The chemical company BASF backed the idea and put Carl Bosch in charge of turning it into a factory process."
+        ]},
+        { h: "Bosch's engineering", p: [
+          "Bosch's challenge was enormous. The reaction needs very high pressure, on the order of 150 to 250 times atmospheric pressure, and temperatures around 400 to 500 degrees Celsius. At that pressure, steel reactors were weakened by hydrogen. His team had to design new reactors and, with Alwin Mittasch, find a far cheaper catalyst based on iron. The first industrial plant, at Oppau in Germany, began production in 1913. It was a triumph of chemical engineering as much as of chemistry."
+        ]},
+        { h: "Fertilizer and war", p: [
+          "The timing was tragic. When the First World War began, ammonia could be converted into nitric acid, a key ingredient of explosives, which freed Germany from dependence on imported saltpeter. Haber also led Germany's chemical weapons effort, including the use of chlorine gas in 1915.",
+          "He won the Nobel Prize in Chemistry in 1918 for the ammonia synthesis, a choice that was controversial. Bosch received a Nobel in 1931 for high-pressure chemistry. Haber, born into a Jewish family, left Germany after the Nazis took power and died in exile in 1934."
+        ]},
+        { h: "What it did to the world", p: [
+          "After the war, the process spread worldwide, and synthetic fertilizer helped drive the dramatic rise in crop yields of the 20th century. Estimates by researchers such as Vaclav Smil suggest that roughly half of the world's population is fed by crops grown with Haber-Bosch nitrogen. In that sense, a large share of the nitrogen in our own bodies has passed through an ammonia plant."
+        ]},
+        { h: "The bill", p: [
+          "The process uses large amounts of energy, mostly from natural gas, which supplies the hydrogen. It is thought to account for roughly one to two percent of global energy use and a similar share of carbon dioxide emissions. Excess fertilizer also washes into rivers and coastal waters, feeding algae blooms that deplete oxygen and create dead zones, such as the one in the Gulf of Mexico."
+        ]},
+        { h: "The next chapter", p: [
+          "Today, researchers and companies are working on green ammonia, made with hydrogen produced from water using renewable electricity, as well as catalysts that work under milder conditions. Ammonia is also being explored as a way to store and ship hydrogen. For a chemical engineer, this is one of the most important open problems in the field: feed the world without overheating it."
+        ]}
+      ],
+      takeaway: "The same reaction that feeds billions also burns a lot of fuel. Fixing that is one of chemical engineering's big jobs.",
+      source: { label: "Wikipedia: Haber process", url: "https://en.wikipedia.org/wiki/Haber_process" }
+    },
+    {
+      key: "materials", domain: "Materials and India", emoji: "\uD83C\uDFDB\uFE0F", c1: "#B26A0A", c2: "#6B3A05",
+      hook: "An iron pillar in Delhi has stood in the open for about 1,600 years and barely rusted.",
+      story: "In the Qutb complex in Delhi stands an iron pillar over seven meters tall, usually dated to the Gupta era, around 1,600 years ago. Iron shouldn't last that long in damp air, yet this one is largely intact. Studies suggest part of the secret is the iron itself: it's rich in phosphorus, which helped form a thin protective layer on the surface that slows further rusting. Delhi's relatively dry climate probably helped too. Today it is a favorite example for people who study metals and corrosion.",
+      deep: [
+        { h: "A pillar with a long journey", p: [
+          "Standing in the Qutb complex in Mehrauli, Delhi, the iron pillar is more than seven meters tall and weighs over six tonnes. A Sanskrit inscription in Gupta-era script praises a king named Chandra, usually identified as Chandragupta II, who ruled around the late 4th to early 5th century. That gives the pillar an age of about 1,600 years. It likely stood elsewhere originally and was moved to Delhi much later, though where it first stood is debated."
+        ]},
+        { h: "Made by hand, not poured", p: [
+          "The pillar was not cast. It was built by forge welding: lumps of hot, spongy wrought iron were hammered together, again and again, until they formed a single mass. This took enormous skill, because the ironworkers had to join heavy pieces while the metal stayed hot enough to fuse. Making a single piece this size by hand-forging was a remarkable achievement for the time."
+        ]},
+        { h: "Why it didn't rust away", p: [
+          "Iron normally reacts with oxygen and moisture to form flaky rust that falls away and exposes fresh metal. The Delhi pillar's iron has a higher phosphorus content than most modern iron and steel, and very little sulfur and manganese. Studies, notably by R. Balasubramaniam at IIT Kanpur, found that over time a thin, tightly sticking layer formed on the surface, containing compounds of iron, oxygen, hydrogen and phosphorus. This film is only a fraction of a millimeter thick, but it acts as a barrier that slows further corrosion.",
+          "Climate also helped. Delhi has monsoons, but it is drier overall than many parts of India, so the metal wasn't constantly wet. The pillar is not rustproof, though. It has pitting and some corrosion in places. It is simply far slower to corrode than many people would expect."
+        ]},
+        { h: "The hugging tradition", p: [
+          "For a long time, visitors liked to stand with their back to the pillar and try to wrap their arms around it, a custom said to bring luck. Hands and sweat did the metal no favors, and in 1997 the pillar was fenced off to protect it."
+        ]},
+        { h: "A tradition of metal", p: [
+          "India had a long history of advanced metallurgy. Wootz, a high-carbon crucible steel made in southern India, was exported for centuries and is linked to the famous Damascus blades of the Middle East. The pillar is one of the most visible reminders of that skill."
+        ]}
+      ],
+      takeaway: "People can master a material long before anyone can explain it. The pillar waited centuries for chemistry to catch up.",
+      source: { label: "Wikipedia: Iron pillar of Delhi", url: "https://en.wikipedia.org/wiki/Iron_pillar_of_Delhi" }
+    }
+  ];
+
+
+
+  var WPM = 200;
+  var DOMAINS = {
+    science: { name: "Science and nature", short: "Science", label: "science", emoji: "\uD83D\uDD2C", c1: "#0A8F8F", c2: "#064B5C" },
+    tech:    { name: "Technology",         short: "Tech",    label: "tech",    emoji: "\uD83D\uDCA1", c1: "#5B4BDB", c2: "#2A1F8A" },
+    food:    { name: "Food and cooking",   short: "Food",    label: "food",    emoji: "\uD83C\uDF73", c1: "#C8431E", c2: "#7A1F12" },
+    fashion: { name: "Fashion and design", short: "Fashion", label: "fashion", emoji: "\uD83E\uDDF5", c1: "#1F6FD1", c2: "#123C7A" }
+  };
+  var KEYMAP = { earth: "science", space: "science", chem: "science", materials: "science", cooking: "food", tech: "tech", fashion: "fashion" };
+
+  /* ===== helpers ===== */
+  var $ = function (id) { return document.getElementById(id); };
+  var mem = {};
+  function sget(k) { try { return window.localStorage.getItem(k); } catch (e) { return mem[k] || null; } }
+  function sset(k, v) { try { window.localStorage.setItem(k, v); } catch (e) { mem[k] = String(v); } }
+  function readJSON(k, fb) { try { return JSON.parse(sget(k)) || fb; } catch (e) { return fb; } }
+  function wordCount(c) { var n = 0; c.deep.forEach(function (s) { s.p.forEach(function (t) { n += t.split(/\s+/).length; }); }); return n; }
+  function deepMins(c) { return Math.max(1, Math.round(wordCount(c) / WPM)); }
+  function cardCredit(c) { return c.made ? "AI-retold from " + c.source.label : "AI-written sample"; }
+  function storySecs(c) { return Math.max(10, Math.round(c.story.split(/\s+/).length / 3.3 / 5) * 5); }
+
+  /* ===== content: cards.json if it loads, built-in samples if not ===== */
+  var CARDS = [], usingFile = false;
+  function normalize(list) {
+    var out = [];
+    list.forEach(function (c) {
+      if (!c || !c.hook || !c.story || !c.deep || !c.deep.length) return;
+      c.domainKey = c.domainKey || KEYMAP[c.key] || "science";
+      var D = DOMAINS[c.domainKey] || DOMAINS.science;
+      c.domain = c.domain || D.name; c.c1 = c.c1 || D.c1; c.c2 = c.c2 || D.c2; c.emoji = c.emoji || D.emoji;
+      c.shape = c.shape || "human story";
+      c.takeaway = c.takeaway || "";
+      c.source = c.source || { label: "Source", url: "#" };
+      out.push(c);
+    });
+    return out;
+  }
+  function loadCards() {
+    CARDS = normalize(FALLBACK);
+    return fetch("cards.json", { cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw new Error("no file"); return r.json(); })
+      .then(function (d) {
+        var list = normalize((d && d.cards) || []);
+        if (list.length) { CARDS = list; usingFile = true; }
+      })
+      .catch(function () { /* opened as a plain file or no cards.json yet: keep the samples */ });
+  }
+
+  /* ===== taste: learned per topic from behaviour, never asked ===== */
+  var TASTE_KEY = "curio-taste-v2";
+  var taste = readJSON(TASTE_KEY, {});
+  function entry(k) { if (!taste[k]) taste[k] = { score: 0, views: 0, deeper: 0, finished: 0 }; return taste[k]; }
+  function saveTaste() { sset(TASTE_KEY, JSON.stringify(taste)); }
+  function recordDwell(c, ms) { var e = entry(c.domainKey); e.views += 1; if (ms < 4000) e.score -= 1; else if (ms >= 10000) e.score += 1; saveTaste(); }
+  function recordDeeper(c) { var e = entry(c.domainKey); e.deeper += 1; e.score += 3; saveTaste(); }
+  function recordFinished(c) { var e = entry(c.domainKey); e.finished += 1; e.score += 2; saveTaste(); }
+  function topicWeight(k) { var s = taste[k] ? taste[k].score : 0; return Math.min(4, Math.max(0.3, 1 + 0.35 * s)); }
+  function totalViews() { var n = 0; Object.keys(taste).forEach(function (k) { n += taste[k].views; }); return n; }
+
+  /* ===== picking the next story ===== */
+  var seen = [], EXPLORE = 0.2, filterKey = "all", lastCard = null;
+  function pickNext() {
+    function pool() {
+      return CARDS.filter(function (c) {
+        return (filterKey === "all" || c.domainKey === filterKey) && seen.indexOf(c.key) === -1 && !(lastCard && c.key === lastCard.key);
+      });
+    }
+    var p = pool();
+    if (!p.length) { seen = []; p = pool(); }
+    if (!p.length) p = CARDS.filter(function (c) { return filterKey === "all" || c.domainKey === filterKey; });
+    var chosen, explored = false;
+    if (filterKey === "all" && Math.random() < EXPLORE) {
+      chosen = p[Math.floor(Math.random() * p.length)]; explored = true;
+    } else {
+      var ws = p.map(function (c) {
+        var w = filterKey === "all" ? topicWeight(c.domainKey) : 1;
+        if (lastCard && c.shape === lastCard.shape) w *= 0.3;   // don't repeat the same story shape back to back
+        return w;
+      });
+      var total = ws.reduce(function (a, b) { return a + b; }, 0), r = Math.random() * total;
+      chosen = p[p.length - 1];
+      for (var i = 0; i < p.length; i++) { r -= ws[i]; if (r <= 0) { chosen = p[i]; break; } }
+    }
+    seen.push(chosen.key);
+    var reason = "";
+    if (filterKey === "all" && !explored && totalViews() >= 5 && taste[chosen.domainKey] && taste[chosen.domainKey].score >= 3) {
+      reason = "Because you like " + DOMAINS[chosen.domainKey].label;
+    }
+    return { card: chosen, reason: reason };
+  }
+
+  /* ===== the reel feed ===== */
+  var feed = $("feed"), reels = [], active = null, since = 0;
+
+  function makeReel(c, reason, withHint) {
+    var el = document.createElement("section");
+    el.className = "reel";
+    el._card = c;
+    el.style.backgroundImage = "linear-gradient(165deg," + c.c1 + "," + c.c2 + ")";
+    el.innerHTML =
+      '<div class="emoji" aria-hidden="true"></div>' +
+      '<div class="cbody"><div class="cin">' +
+        '<div class="chips"><span class="tag"></span><span class="why"></span></div>' +
+        '<h1 class="hook"></h1><p class="story"></p><p class="credit"></p>' +
+      '</div></div>' +
+      '<button class="deeper">Know more</button>';
+    el.querySelector(".emoji").textContent = c.emoji;
+    el.querySelector(".tag").textContent = c.domain + ", " + storySecs(c) + " sec";
+    var why = el.querySelector(".why");
+    if (reason) why.textContent = reason; else why.remove();
+    el.querySelector(".hook").textContent = c.hook;
+    el.querySelector(".story").textContent = c.story;
+    el.querySelector(".credit").textContent = cardCredit(c);
+    el.querySelector(".deeper").addEventListener("click", function () { el._noDwell = true; openReader(c); });
+    if (withHint) { var h = document.createElement("div"); h.className = "swipehint"; h.textContent = "Swipe up for the next one \u2191"; el.appendChild(h); }
+    return el;
+  }
+
+  function fit(el) {
+    var body = el.querySelector(".cbody"), cin = el.querySelector(".cin");
+    var hook = el.querySelector(".hook"), story = el.querySelector(".story");
+    var hs = parseFloat(getComputedStyle(hook).fontSize), ss = parseFloat(getComputedStyle(story).fontSize), n = 0;
+    while (cin.offsetHeight > body.clientHeight + 1 && n < 40) {
+      if (ss > 13.5) { ss -= 0.5; story.style.fontSize = ss + "px"; }
+      else if (hs > 19) { hs -= 1; hook.style.fontSize = hs + "px"; }
+      else break;
+      n++;
+    }
+  }
+
+  function addReel(withHint) {
+    var p = pickNext();
+    lastCard = p.card;
+    var el = makeReel(p.card, p.reason, withHint);
+    feed.appendChild(el);
+    fit(el);
+    reels.push(el);
+    observer.observe(el);
+  }
+
+  function trim() {   // keep the page light on long sessions
+    var idx = reels.indexOf(active);
+    while (reels.length > 30 && idx > 6) {
+      var first = reels.shift(); idx -= 1;
+      observer.unobserve(first);
+      var h = first.offsetHeight;
+      feed.style.scrollSnapType = "none";
+      first.remove();
+      feed.scrollTop -= h;
+    }
+    requestAnimationFrame(function () { feed.style.scrollSnapType = ""; });
+  }
+
+  function activate(el) {
+    if (active === el) return;
+    if (active && !active._noDwell) recordDwell(active._card, Date.now() - since);
+    active = el; since = Date.now(); el._noDwell = false;
+    var idx = reels.indexOf(el);
+    while (reels.length < idx + 3) addReel(false);   // always keep 2 stories ready ahead
+    trim();
+  }
+
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) { if (e.isIntersecting && e.intersectionRatio >= 0.6) activate(e.target); });
+  }, { root: feed, threshold: [0.6] });
+
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) { if (readerCard) saveReadPos(); window._hiddenAt = Date.now(); }
+    else if (window._hiddenAt) { since += Date.now() - window._hiddenAt; window._hiddenAt = 0; }
+  });
+  feed.addEventListener("scroll", function () {
+    if (feed.scrollTop > 40) { var h = document.querySelector(".swipehint"); if (h) h.remove(); }
+  }, { passive: true });
+
+  /* ===== views: home <-> feed ===== */
+  function leaveFeed() {
+    if (active && !active._noDwell) recordDwell(active._card, Date.now() - since);
+    active = null;
+    reels.forEach(function (r) { observer.unobserve(r); });
+    reels = []; feed.innerHTML = "";
+  }
+  function renderChips() {
+    var row = $("chipsrow"); row.innerHTML = "";
+    var keys = ["all"].concat(Object.keys(DOMAINS).filter(function (k) { return CARDS.some(function (c) { return c.domainKey === k; }); }));
+    keys.forEach(function (k) {
+      var b = document.createElement("button");
+      b.className = "fchip" + (k === filterKey ? " on" : "");
+      b.textContent = k === "all" ? "All" : DOMAINS[k].short;
+      b.addEventListener("click", function () { if (k !== filterKey) showFeed(k); });
+      row.appendChild(b);
+    });
+  }
+  function showFeed(key) {
+    leaveFeed();
+    filterKey = key; seen = []; lastCard = null;
+    $("home").hidden = true; $("storylist").hidden = true; $("feedview").hidden = false; $("tabbar").hidden = false; setTab("scroll");
+    renderChips();
+    feed.scrollTop = 0;
+    addReel(true); addReel(false); addReel(false);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { reels.forEach(fit); });
+  }
+  function showHome() {
+    closeReader(); leaveFeed();
+    $("feedview").hidden = true; $("bedtime").hidden = true; $("storylist").hidden = true; $("home").hidden = false; $("tabbar").hidden = false; setTab("home");
+    renderHome();
+  }
+  function renderHome() {
+    var box = $("tiles"); box.innerHTML = "";
+    Object.keys(DOMAINS).forEach(function (k) {
+      var n = CARDS.filter(function (c) { return c.domainKey === k; }).length;
+      if (!n) return;
+      var D = DOMAINS[k], b = document.createElement("button");
+      b.className = "tile";
+      b.style.background = "linear-gradient(150deg," + D.c1 + "," + D.c2 + ")";
+      b.innerHTML = '<span class="temoji" aria-hidden="true"></span><span><b></b><small></small></span>';
+      b.querySelector(".temoji").textContent = D.emoji;
+      b.querySelector("b").textContent = D.short;
+      b.querySelector("small").textContent = n + (n === 1 ? " fact" : " facts");
+      b.addEventListener("click", function () { showFeed(k); });
+      box.appendChild(b);
+    });
+    var soon = document.querySelector("#doorTonight .soon");
+    if (soon) soon.textContent = storiesFromFile ? STORIES.length + (STORIES.length === 1 ? " story" : " stories") : "Sample";
+  }
+  $("doorQuick").addEventListener("click", function () { showFeed("all"); });
+  $("backBtn").addEventListener("click", showHome);
+
+  /* ===== deep reader (remembers where you stopped) ===== */
+  var reader = $("reader"), maxDepth = 0, readerCard = null;
+  function saveReadPos() {
+    var max = reader.scrollHeight - reader.clientHeight;
+    if (readerCard && max > 0) sset("curio-pos-" + readerCard.key, (reader.scrollTop / max).toFixed(3));
+  }
+  function openReader(c) {
+    readerCard = c; recordDeeper(c); maxDepth = 0;
+    $("rhead").style.background = "linear-gradient(160deg," + c.c1 + "," + c.c2 + ")";
+    $("remoji").textContent = c.emoji;
+    $("rtag").textContent = c.domain;
+    $("rtitle").textContent = c.hook;
+    $("rmeta").textContent = "About " + deepMins(c) + " min read";
+    var body = $("rbody"); body.innerHTML = "";
+    c.deep.forEach(function (s) {
+      var h = document.createElement("h3"); h.textContent = s.h; h.style.color = c.c2; body.appendChild(h);
+      s.p.forEach(function (t) { var p = document.createElement("p"); p.textContent = t; body.appendChild(p); });
+    });
+    if (c.takeaway) {
+      var tk = document.createElement("div"); tk.className = "takeaway";
+      tk.style.background = "linear-gradient(160deg," + c.c1 + "," + c.c2 + ")";
+      tk.innerHTML = "<b>The takeaway</b><span></span>"; tk.querySelector("span").textContent = c.takeaway; body.appendChild(tk);
+    }
+    var rc = document.createElement("p"); rc.className = "rcredit";
+    rc.textContent = c.made ? "Retold by AI from the source below, then checked automatically against it." : "This is an AI-written sample card.";
+    body.appendChild(rc);
+    var src = document.createElement("p"); src.className = "source";
+    src.appendChild(document.createTextNode("Read the original: "));
+    var a = document.createElement("a"); a.href = c.source.url; a.target = "_blank"; a.rel = "noopener"; a.textContent = c.source.label;
+    src.appendChild(a); body.appendChild(src);
+    $("progress").style.background = c.c1;
+    reader.classList.add("open"); $("rbar").classList.add("open"); reader.setAttribute("aria-hidden", "false");
+    var saved = parseFloat(sget("curio-pos-" + c.key));
+    var max = reader.scrollHeight - reader.clientHeight;
+    var resume = saved > 0.02 && saved < 0.95 && max > 0;
+    reader.scrollTop = resume ? saved * max : 0;
+    $("progress").style.width = (resume ? saved * 100 : 0) + "%";
+  }
+  function closeReader() {
+    if (!readerCard) return;
+    saveReadPos();
+    if (maxDepth >= 0.8) { recordFinished(readerCard); sset("curio-pos-" + readerCard.key, "0"); }
+    readerCard = null;
+    reader.classList.remove("open"); $("rbar").classList.remove("open"); reader.setAttribute("aria-hidden", "true");
+    $("progress").style.width = "0";
+    since = Date.now();
+  }
+  reader.addEventListener("scroll", function () {
+    var max = reader.scrollHeight - reader.clientHeight;
+    var ratio = max > 0 ? reader.scrollTop / max : 0;
+    if (ratio > maxDepth) maxDepth = ratio;
+    $("progress").style.width = (ratio * 100) + "%";
+  }, { passive: true });
+
+  /* ===== hidden founder panel: tap the logo 5 times on the homepage ===== */
+  function openProfile() {
+    var tv = 0, td = 0, tf = 0;
+    Object.keys(taste).forEach(function (k) { tv += taste[k].views; td += taste[k].deeper; tf += taste[k].finished; });
+    $("pstats").innerHTML = "";
+    [["Stories seen", tv], ["Deep reads opened", td], ["Finished", tf]].forEach(function (s) {
+      var d = document.createElement("div"); d.className = "pstat"; d.innerHTML = "<b></b><span></span>";
+      d.querySelector("b").textContent = s[1]; d.querySelector("span").textContent = s[0]; $("pstats").appendChild(d);
+    });
+    $("psub").textContent = "Founder view, hidden from readers. Content source: " + (usingFile ? "cards.json (" + CARDS.length + " stories)" : "built-in samples (" + CARDS.length + " stories)") + ".";
+    var box = $("pbars"); box.innerHTML = "";
+    var rows = Object.keys(DOMAINS).map(function (k) { return { k: k, w: topicWeight(k) }; }).sort(function (a, b) { return b.w - a.w; });
+    var max = rows[0].w;
+    rows.forEach(function (r) {
+      var D = DOMAINS[r.k], row = document.createElement("div"); row.className = "trow";
+      row.innerHTML = '<div class="tlabel"></div><div class="ttrack"><div class="tfill"></div></div>';
+      row.querySelector(".tlabel").textContent = D.emoji + " " + D.short;
+      var f = row.querySelector(".tfill"); f.style.width = Math.max(6, Math.round((r.w / max) * 100)) + "%";
+      f.style.background = "linear-gradient(90deg," + D.c1 + ",#FFD166)"; box.appendChild(row);
+    });
+    $("sheetbg").classList.add("open"); $("psheet").classList.add("open"); $("psheet").setAttribute("aria-hidden", "false");
+  }
+  function closeProfile() { $("sheetbg").classList.remove("open"); $("psheet").classList.remove("open"); $("psheet").setAttribute("aria-hidden", "true"); }
+  var logoTaps = 0, logoTimer = null;
+  $("brand").addEventListener("click", function () {
+    logoTaps += 1; clearTimeout(logoTimer); logoTimer = setTimeout(function () { logoTaps = 0; }, 1500);
+    if (logoTaps >= 5) { logoTaps = 0; openProfile(); }
+  });
+  $("closeBtn").addEventListener("click", closeReader);
+  $("pcloseBtn").addEventListener("click", closeProfile);
+  $("sheetbg").addEventListener("click", closeProfile);
+  $("presetBtn").addEventListener("click", function () { taste = {}; saveTaste(); openProfile(); });
+  document.addEventListener("keydown", function (e) {
+    if (reader.classList.contains("open")) { if (e.key === "Escape") closeReader(); return; }
+    if (!$("bedtime").hidden) { if (e.key === "ArrowRight") bedNext(); if (e.key === "ArrowLeft") $("pager").scrollBy({ left: -$("pager").clientWidth, behavior: "smooth" }); return; }
+    if ($("feedview").hidden) { if (e.key === "Escape") closeProfile(); return; }
+    if (e.key === "ArrowDown") { feed.scrollBy({ top: window.innerHeight, behavior: "smooth" }); e.preventDefault(); }
+    if (e.key === "ArrowUp") { feed.scrollBy({ top: -window.innerHeight, behavior: "smooth" }); e.preventDefault(); }
+    if (e.key === "Escape") closeProfile();
+  });
+
+
+  /* ===== stories: stories.json if it loads, built-in sample if not ===== */
+  var SAMPLE_STORIES = [{
+    id: "letters", sample: true, title: "Letters from the Sky", kind: "True facts, told as a story",
+    source: { label: "written by AI as a sample", url: "" },
+    pages: [
+      "Look out of the window tonight, if you can. If the Moon is up, take a slow breath and notice it. The pale light on your face has just finished a journey of a little over a second. It left the Moon, crossed the quiet dark, and landed softly on you. You are always seeing the Moon as it was a moment ago. Nothing in the sky is ever quite right now. Everything up there is a letter that took a little time to arrive.",
+      "The Sun writes letters too, but its letters take longer. Light from the Sun needs about eight minutes to reach us. So when the evening turns gold and the hills glow, you are seeing the Sun as it was eight minutes ago. It is an old letter, and it is still warm. Nobody had to hurry it. It simply travelled, and now it rests on the rooftops and on the leaves, and on your hands.",
+      "Now find the brightest star you can. If it is Sirius, the brightest star in our night sky, its light has been travelling for about eight and a half years. A child who was just starting school when that light set out would be a little older now. The letter crossed enormous, silent space the whole way, never rushing and never stopping, and tonight it found your window.",
+      "Far from city lights, on a very dark night, you may spot a faint, soft smudge. That is the Andromeda galaxy, an island of countless stars. Its light left about two and a half million years ago, long before anyone had written a word or drawn a map. It has been crossing the dark all that time, and it is one of the farthest things people can see with their own eyes.",
+      "So the sky is full of old letters, each one folded small, each one carried across a long silence. Some took a second. Some took millions of years. All of them arrived, and tonight they arrived at a quiet window where someone was looking. There is nothing left to read. The letters can keep coming without you. Let your eyes grow heavy, and let the sky keep its own time."
+    ]
+  }];
+  var STORIES = SAMPLE_STORIES, storiesFromFile = false, currentStory = null, bedIdx = 0;
+
+  function loadStories() {
+    return fetch("stories.json", { cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw new Error("no file"); return r.json(); })
+      .then(function (d) {
+        var list = ((d && d.stories) || []).filter(function (x) { return x && x.title && x.pages && x.pages.length; });
+        if (list.length) { STORIES = list; storiesFromFile = true; }
+      })
+      .catch(function () { /* no stories.json yet: keep the sample */ });
+  }
+  function storyCredit(st) { return st.sample ? "AI-written sample" : "AI-retold from " + ((st.source && st.source.label) || "a public-domain book"); }
+
+  function showStoryList() {
+    $("home").hidden = true; $("feedview").hidden = true; $("bedtime").hidden = true; $("storylist").hidden = false;
+    $("tabbar").hidden = false; setTab("home");
+    var box = $("slist"); box.innerHTML = "";
+    STORIES.forEach(function (st) {
+      var b = document.createElement("button"); b.className = "srow";
+      b.innerHTML = '<span class="stitle"></span><span class="smeta"></span><span class="scredit"></span>';
+      b.querySelector(".stitle").textContent = st.title;
+      b.querySelector(".smeta").textContent = (st.kind || "Story") + ", " + st.pages.length + " pages";
+      b.querySelector(".scredit").textContent = st.sample ? "AI-written sample" : "AI-retold";
+      b.addEventListener("click", function () { showBedtime(st); });
+      box.appendChild(b);
+    });
+    $("storylist").scrollTop = 0;
+  }
+
+  function showBedtime(st) {
+    currentStory = st;
+    $("home").hidden = true; $("storylist").hidden = true; $("bedtime").hidden = false; $("tabbar").hidden = true;
+    var pager = $("pager"); pager.innerHTML = ""; $("bdots").innerHTML = "";
+    st.pages.forEach(function (t, i) {
+      var pg = document.createElement("section"); pg.className = "bpage";
+      var inner = document.createElement("div"); inner.className = "bin";
+      if (i === 0) {
+        var k = document.createElement("div"); k.className = "bkind"; k.textContent = st.kind || "Story"; inner.appendChild(k);
+        var h = document.createElement("h2"); h.className = "btitle"; h.textContent = st.title; inner.appendChild(h);
+      }
+      var p = document.createElement("p"); p.textContent = t; inner.appendChild(p);
+      if (i === 0) { var c1 = document.createElement("div"); c1.className = "bcredit"; c1.textContent = storyCredit(st); inner.appendChild(c1); }
+      if (i === st.pages.length - 1) {
+        if (st.moral) { var m = document.createElement("div"); m.className = "bmoral"; m.textContent = st.moral; inner.appendChild(m); }
+        var e = document.createElement("div"); e.className = "bend"; e.textContent = "The end. Goodnight."; inner.appendChild(e);
+        var c2 = document.createElement("div"); c2.className = "bcredit";
+        c2.appendChild(document.createTextNode(storyCredit(st)));
+        if (st.source && st.source.url) {
+          c2.appendChild(document.createTextNode(". Source: "));
+          var a = document.createElement("a"); a.href = st.source.url; a.target = "_blank"; a.rel = "noopener"; a.textContent = "original text";
+          c2.appendChild(a);
+        }
+        inner.appendChild(c2);
+      }
+      pg.appendChild(inner); pager.appendChild(pg);
+      var d = document.createElement("span"); d.className = "bdot"; $("bdots").appendChild(d);
+    });
+    pager.scrollLeft = 0; $("dimmer").classList.remove("on");
+    updateBed();
+  }
+  function updateBed() {
+    var pager = $("pager"), n = currentStory.pages.length;
+    bedIdx = Math.max(0, Math.min(n - 1, Math.round(pager.scrollLeft / pager.clientWidth)));
+    [].forEach.call($("bdots").children, function (d, i) { d.classList.toggle("on", i === bedIdx); });
+    var last = bedIdx === n - 1;
+    $("bnext").textContent = last ? "Back to stories" : "Next page";
+    $("dimmer").classList.toggle("on", last);
+  }
+  function bedNext() {
+    var pager = $("pager"), n = currentStory.pages.length;
+    if (bedIdx >= n - 1) { showStoryList(); return; }
+    pager.scrollTo({ left: (bedIdx + 1) * pager.clientWidth, behavior: "smooth" });
+  }
+  $("pager").addEventListener("scroll", function () { if (currentStory) updateBed(); }, { passive: true });
+  $("bnext").addEventListener("click", bedNext);
+  $("bedBack").addEventListener("click", showStoryList);
+  $("doorTonight").addEventListener("click", showStoryList);
+
+
+  /* ===== bottom tabs ===== */
+  function setTab(name) {
+    $("tabHome").classList.toggle("on", name === "home");
+    $("tabScroll").classList.toggle("on", name === "scroll");
+  }
+  $("tabHome").addEventListener("click", function () { if (!$("home").hidden) return; showHome(); });
+  $("tabScroll").addEventListener("click", function () { if (!$("feedview").hidden && filterKey === "all") return; showFeed("all"); });
+
+  /* ===== start ===== */
+  Promise.all([loadCards(), loadStories()]).then(function () { $("home").hidden = false; $("tabbar").hidden = false; setTab("home"); renderHome(); });
+</script>
+</body>
+</html>
